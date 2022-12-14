@@ -1,6 +1,6 @@
 import requests
 from aiogram import types
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 
 from loader import dp, bot
 
@@ -24,9 +24,9 @@ url = "https://www.dns-shop.ru/catalog/17a892f816404e77/noutbuki/?q="
 async def get_message(message: types.Message):
     url = "https://www.dns-shop.ru/search?q=" + message.text
     request = requests.get(url)
-    soup = BeautifulSoup(url, "html.parser")
+    # soup = BeautifulSoup(url, "html.parser")
 
-    all_links = soup.find_all("a")
+    # all_links = soup.find_all("a")
     # for link in all_links:
     #     print(link["href"])
     #     url = "https://www.golden-swim.by/" + link["href"]
