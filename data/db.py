@@ -1,7 +1,7 @@
 from sqlalchemy.orm import sessionmaker
 
 from data.config import ENGINE
-from data.models import Base
+from data.models import Base, Person
 
 
 class SingletonMeta(type):
@@ -33,3 +33,26 @@ class DBCommands:
         :return:
         """
         Base.metadata.create_all(ENGINE)
+
+    def get(self, model, **kwargs):
+        instance = self.pool.query(model).filter_by(**kwargs).first()
+        return instance or None
+
+    def get_user(self, username: str):
+        """
+        Получение экземпляра пользователя из БД по его Ид
+        :param : Идентификатор
+        """
+        return self.get(Person, name=username)
+
+    def create_user(self, username: str, age: int):
+        """
+        Создание нового пользователя в БД
+        :return:
+        """
+        new_user = Person(
+            name=username,
+            age=age,
+        )
+        self.pool.add(new_user)
+        self.pool.commit()

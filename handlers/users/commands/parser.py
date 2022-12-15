@@ -1,6 +1,6 @@
 import requests
 from aiogram import types
-# from bs4 import BeautifulSoup
+
 
 from loader import dp, bot
 
