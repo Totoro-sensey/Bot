@@ -1,7 +1,6 @@
 from sqlalchemy.orm import sessionmaker
-
+from data.models import Base, Role, User, MenuCategories
 from data.config import ENGINE
-from data.models import Base, Person
 
 
 class SingletonMeta(type):
@@ -13,46 +12,70 @@ class SingletonMeta(type):
         return cls._instances[cls]
 
 
-class DBEngine(metaclass=SingletonMeta):
+class DBManager(metaclass=SingletonMeta):
     connection = None
 
     @classmethod
     def connect(cls):
         if cls.connection is None:
             cls.connection = sessionmaker(bind=ENGINE)()
-            return cls.connection
+        return cls.connection
 
 
 class DBCommands:
     def __init__(self):
-        self.pool = DBEngine.connect()
+        self.pool = DBManager.connect()
 
-    async def create_tables(self):
-        """
-        Creating tables
-        :return:
-        """
+    @staticmethod
+    def create_tables():
         Base.metadata.create_all(ENGINE)
 
     def get(self, model, **kwargs):
         instance = self.pool.query(model).filter_by(**kwargs).first()
         return instance or None
 
-    def get_user(self, username: str):
+    def get_all(self, model, **kwargs):
+        instance = self.pool.query(model).filter_by(**kwargs)
+        return instance or None
+
+    def create_role(self, name):
+        """
+        Создает новую роль в таблице Roles
+        :param name: Наименование роли
+        """
+        role = Role(name=name)
+        self.pool.add(role)
+        self.pool.commit()
+
+    def get_user(self, user_id: int):
         """
         Получение экземпляра пользователя из БД по его Ид
         :param : Идентификатор
         """
-        return self.get(Person, name=username)
+        return self.get(User, user_id=user_id)
 
-    def create_user(self, username: str, age: int):
+    def create_user(self, user_id: int, fullname: str, username: str, role_id: int):
         """
         Создание нового пользователя в БД
         :return:
         """
-        new_user = Person(
-            name=username,
-            age=age,
+        new_user = User(
+            user_id=user_id,
+            user_fullname=fullname,
+            user_name=username,
+            role_id=role_id,
         )
         self.pool.add(new_user)
+        self.pool.commit()
+
+    def create_category(self, name):
+        """
+        Создание новой категории
+        :return: None
+        """
+        category = MenuCategories(
+            name=name,
+        )
+
+        self.pool.add(category)
         self.pool.commit()
