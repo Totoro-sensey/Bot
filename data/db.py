@@ -68,14 +68,24 @@ class DBCommands:
         self.pool.add(new_user)
         self.pool.commit()
 
-    def create_category(self, name):
+    def create_category(self, name, text, parent_id):
         """
         Создание новой категории
         :return: None
         """
         category = MenuCategories(
             name=name,
+            text=text,
+            parent_id=parent_id
         )
 
         self.pool.add(category)
+        self.pool.commit()
+
+    def delete_category(self, category_id):
+        """
+        Создание новой категории
+        :return: None
+        """
+        self.pool.query(MenuCategories).filter_by(id=category_id).delete()
         self.pool.commit()

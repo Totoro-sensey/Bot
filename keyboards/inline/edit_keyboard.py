@@ -3,7 +3,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 edit_menu = InlineKeyboardButton(
     text="Редактировать",
-    callback_data=f"edit"
+    callback_data=f"edit:manager"
     )
 
 
@@ -23,3 +23,17 @@ def edit_inline_keyboard() -> InlineKeyboardMarkup:
     return keyboard
 
 
+def save_or_cancel_keyboard() -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"Отменить",
+            callback_data=f"cancel"
+            ),
+        InlineKeyboardButton(
+            text=f"Сохранить",
+            callback_data=f"save"
+        ),
+        )
+
+    return keyboard

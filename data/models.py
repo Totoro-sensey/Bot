@@ -38,4 +38,6 @@ class MenuCategories(Base):
     id = Column("Id", BigInteger, primary_key=True)
     name = Column("Name", Text)
     text = Column("Text", Text, nullable=True)
-    parent_id = Column("Parent_Id", BigInteger, nullable=True)
+    parent_id = Column("Parent_Id", BigInteger, ForeignKey("MenuCategories.Id", ondelete="CASCADE"))
+
+    Children = relationship("MenuCategories", cascade="all, delete")
