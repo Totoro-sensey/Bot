@@ -2,15 +2,16 @@ from aiogram import types
 from aiogram.types import CallbackQuery
 
 from data.db import DBCommands
-from data.models import User, MenuCategories
+from data.models import MenuCategories
 from keyboards.inline.edit_keyboard import edit_menu
 from keyboards.inline.menu_keyboard import menu_inline_keyboard, back_to_menu
-from loader import dp, bot
+from loader import dp
 
 db = DBCommands()
 
 
-async def show_menu(message, storage):
+async def show_menu(message):
+    storage = await dp.storage.get_data(chat=message.chat.id)
     category = db.get(MenuCategories, id=storage["category_id"])
     keyboard = menu_inline_keyboard(category.id)
     if db.get_user(message.chat.id).Role.name == "administrator":
@@ -85,4 +86,3 @@ async def get_category(call: CallbackQuery):
 
     await call.message.edit_text(text=text,
                                  reply_markup=keyboard)
-    

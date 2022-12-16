@@ -10,6 +10,11 @@ back_to_menu = InlineKeyboardButton(
     callback_data=f"back:"
     )
 
+cancel_button = InlineKeyboardButton(
+    text="Отмена",
+    callback_data=f"cancel:"
+    )
+
 
 def menu_inline_keyboard(category_id) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
