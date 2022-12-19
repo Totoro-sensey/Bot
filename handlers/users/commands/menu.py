@@ -60,7 +60,7 @@ async def get_category(call: CallbackQuery):
                                      f"{category.text}",
                                      reply_markup=keyboard)
     else:
-        await call.message.delete_reply_markup()
+        await call.message.delete()
         await menu(call.message)
 
 
@@ -68,21 +68,25 @@ async def get_category(call: CallbackQuery):
 async def get_category(call: CallbackQuery):
     storage = await dp.storage.get_data(chat=call.message.chat.id)
 
-    category = db.get(MenuCategories, id=storage["parent_id"])
+    if storage != {}:
+        category = db.get(MenuCategories, id=storage["parent_id"])
 
-    await dp.storage.update_data(chat=call.message.chat.id,
-                                 category_id=category.id,
-                                 parent_id=category.parent_id)
+        await dp.storage.update_data(chat=call.message.chat.id,
+                                     category_id=category.id,
+                                     parent_id=category.parent_id)
 
-    keyboard = menu_inline_keyboard(category.id)
-    if db.get_user(call.from_user.id).Role.name == "administrator":
-        keyboard.add(edit_menu)
-    if category.parent_id:
-        keyboard.add(back_to_menu)
+        keyboard = menu_inline_keyboard(category.id)
+        if db.get_user(call.from_user.id).Role.name == "administrator":
+            keyboard.add(edit_menu)
+        if category.parent_id:
+            keyboard.add(back_to_menu)
 
-    text = f"{category.name}\n"
-    if category.text:
-        text += category.text
+        text = f"{category.name}\n"
+        if category.text:
+            text += category.text
 
-    await call.message.edit_text(text=text,
-                                 reply_markup=keyboard)
+        await call.message.edit_text(text=text,
+                                     reply_markup=keyboard)
+    else:
+        await call.message.delete()
+        await menu(call.message)

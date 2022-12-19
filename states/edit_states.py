@@ -7,5 +7,11 @@ class FSMCreateCategory(StatesGroup):
     save = State()
 
 
+class FSMCUpdateCategory(StatesGroup):
+    get_name = State()
+    get_text = State()
+    save = State()
+
+
 class FSMDeleteCategory(StatesGroup):
     save = State()

@@ -89,3 +89,17 @@ class DBCommands:
         """
         self.pool.query(MenuCategories).filter_by(id=category_id).delete()
         self.pool.commit()
+
+    def update_category(self, category_id, name=None, text=None):
+        """
+        Обновление категории
+        :return: None
+        """
+        category = self.get(MenuCategories, id=category_id)
+        if name:
+            category.name = name
+
+        if text:
+            category.text = text
+
+        self.pool.commit()

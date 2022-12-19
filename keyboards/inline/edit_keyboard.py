@@ -8,7 +8,7 @@ edit_menu = InlineKeyboardButton(
 
 
 def edit_inline_keyboard() -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardMarkup()
+    keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(
         InlineKeyboardButton(
             text=f"Добавить категорию",
@@ -17,6 +17,26 @@ def edit_inline_keyboard() -> InlineKeyboardMarkup:
         InlineKeyboardButton(
             text=f"Удалить категорию",
             callback_data=f"edit:delete"
+        ),
+        InlineKeyboardButton(
+            text=f"Изменить категорию",
+            callback_data=f"edit:update"
+        ),
+        )
+
+    return keyboard
+
+
+def update_inline_keyboard() -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(
+        InlineKeyboardButton(
+            text=f"Изменить название",
+            callback_data=f"edit:up_name"
+            ),
+        InlineKeyboardButton(
+            text=f"Изменить текст",
+            callback_data=f"edit:up_text"
         ),
         )
 
