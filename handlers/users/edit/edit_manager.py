@@ -22,6 +22,8 @@ async def edit(call: CallbackQuery, state: FSMContext):
 
     await dp.storage.update_data(chat=call.message.chat.id,
                                  category_id=storage["category_id"],
-                                 parent_id=storage["parent_id"])
+                                 parent_id=storage["parent_id"],
+                                 page_number=storage["page_number"]
+                                 )
 
     await show_menu(call.message)

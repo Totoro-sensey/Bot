@@ -16,15 +16,30 @@ cancel_button = InlineKeyboardButton(
     )
 
 
-def menu_inline_keyboard(category_id) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardMarkup()
-    categories = db.get_all(MenuCategories, parent_id=category_id)
-    for category in categories:
+def menu_inline_keyboard(obj_list, page_number, isPages) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    for category in obj_list:
         keyboard.add(
             InlineKeyboardButton(
                 text=f"{category.name}",
                 callback_data=f"category:{category.id}"
                 ),
+            )
+    if isPages:
+        keyboard.row_width = 3
+        keyboard.add(
+            InlineKeyboardButton(
+                text=f"🔙",
+                callback_data=f"previous"
+            ),
+            InlineKeyboardButton(
+                text=f"{page_number}",
+                callback_data=f"page_number"
+            ),
+            InlineKeyboardButton(
+                text=f"🔜",
+                callback_data=f"next"
+            ),
             )
 
     return keyboard

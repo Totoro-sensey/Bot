@@ -20,6 +20,8 @@ if STATUS == "DEV":
     DB_USER = env.str("DATABASE_USER")
     DB_ENGINE = env.str("DATABASE_ENGINE")
 
+    PAGE = int(env.str("PAGE"))
+
 else:
     BOT_TOKEN = ""
     ADMINS = []
@@ -30,6 +32,8 @@ else:
     DB_PASSWORD = ""
     DB_USER = ""
     DB_ENGINE = ""
+
+    PAGE = ""
 
 ENGINE = create_engine("{0}://{1}:{2}@{3}/{4}".format(DB_ENGINE, DB_USER,
                                                       DB_PASSWORD, DB_HOST, DB_NAME
