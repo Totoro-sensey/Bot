@@ -96,8 +96,7 @@ async def delete(call: CallbackQuery, state: FSMContext):
     await dp.storage.update_data(chat=chat_id,
                                  category_id=category.id,
                                  parent_id=category.parent_id,
-                                 page_number=storage["page_number"]
-                                 )
+                                 page_number=storage["page_number"])
     await show_menu(call.message)
 
 
@@ -167,7 +166,6 @@ async def save_category(call: CallbackQuery, state: FSMContext):
     await dp.storage.update_data(chat=call.message.chat.id,
                                  category_id=storage["category_id"],
                                  parent_id=storage["parent_id"],
-                                 page_number=storage["page_number"]
-                                 )
+                                 page_number=storage["page_number"])
 
     await show_menu(call.message)

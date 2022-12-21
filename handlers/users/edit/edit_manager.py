@@ -9,8 +9,7 @@ from loader import dp
 
 @dp.callback_query_handler(text_contains="edit:manager")
 async def edit(call: CallbackQuery):
-    await call.message.edit_text("Редактирование",
-                                 reply_markup=edit_inline_keyboard().add(cancel_button))
+    await call.message.edit_text("Редактирование", reply_markup=edit_inline_keyboard().add(cancel_button))
 
 
 @dp.callback_query_handler(text_contains="cancel:", state=["*"])
@@ -19,11 +18,11 @@ async def edit(call: CallbackQuery, state: FSMContext):
     storage = await dp.storage.get_data(chat=call.message.chat.id)
     await state.reset_data()
     await state.reset_state()
+    await call.message.delete()
 
     await dp.storage.update_data(chat=call.message.chat.id,
                                  category_id=storage["category_id"],
                                  parent_id=storage["parent_id"],
-                                 page_number=storage["page_number"]
-                                 )
+                                 page_number=storage["page_number"])
 
     await show_menu(call.message)
