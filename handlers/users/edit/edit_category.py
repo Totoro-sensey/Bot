@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup
@@ -10,6 +12,16 @@ from loader import dp
 from states.edit_states import FSMCreateCategory, FSMDeleteCategory, FSMCUpdateCategory
 
 
+async def delete_previous_keyboard(message):
+    # Удаление кнопки у предыдущего сообщения
+    previous_message = message
+    previous_message.message_id = message.message_id - 1
+    try:
+        await previous_message.delete_reply_markup()
+    except:
+        logging.info("Cообщение без кнопки.")
+
+
 #  __________________Create___________________
 @dp.callback_query_handler(text_contains="edit:create")
 async def create_category(call: CallbackQuery):
@@ -20,6 +32,7 @@ async def create_category(call: CallbackQuery):
 
 @dp.message_handler(content_types="text", state=FSMCreateCategory.get_name)
 async def name_category(message: types.Message, state: FSMContext):
+    await delete_previous_keyboard(message)
     await state.update_data(name=message.text)
     await message.answer("Введите текст:",
                          reply_markup=InlineKeyboardMarkup().add(cancel_button))
@@ -28,6 +41,7 @@ async def name_category(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types="text", state=FSMCreateCategory.get_text)
 async def text_category(message: types.Message, state: FSMContext):
+    await delete_previous_keyboard(message)
     data = await state.get_data()
     await state.update_data(text=message.text)
     await message.answer("Новая категория:\n"
@@ -103,6 +117,8 @@ async def update_category(call: CallbackQuery):
 @dp.message_handler(content_types="text", state=FSMCUpdateCategory.get_name)
 async def name_category(message: types.Message, state: FSMContext):
     db = DBCommands()
+    await delete_previous_keyboard(message)
+
     await state.update_data(name=message.text)
     storage = await dp.storage.get_data(chat=message.chat.id)
     category = db.get(MenuCategories, id=storage["category_id"])
@@ -121,6 +137,8 @@ async def update_category(call: CallbackQuery):
 @dp.message_handler(content_types="text", state=FSMCUpdateCategory.get_text)
 async def text_category(message: types.Message, state: FSMContext):
     db = DBCommands()
+    await delete_previous_keyboard(message)
+
     await state.update_data(text=message.text)
     storage = await dp.storage.get_data(chat=message.chat.id)
     category = db.get(MenuCategories, id=storage["category_id"])

@@ -23,17 +23,25 @@ async def show_menu(message):
     if category.parent_id:
         keyboard.add(back_to_menu)
 
-    await message.edit_text(text=f"{category.name}\n"
-                                 f"{category.text}",
-                                 reply_markup=keyboard)
+    text = f"{category.name}\n"
+    if category.text:
+        text += category.text
+
+    await message.answer(text=text,
+                         reply_markup=keyboard)
 
 
 @dp.message_handler(commands="menu")
 async def menu(message: types.Message):
     category = db.get(MenuCategories, id=1)
 
-    paginator = Paginator(category.Children)
-    page = paginator.get_page(category.Children)
+    try:
+        children = category.Children
+    except:
+        children = []
+
+    paginator = Paginator(children)
+    page = paginator.get_page(children)
     keyboard = menu_inline_keyboard(obj_list=page,
                                     page_number=paginator.page_number,
                                     isPages=paginator.diapason > 1)
@@ -62,8 +70,13 @@ async def get_category(call: CallbackQuery):
 
         category = db.get(MenuCategories, id=category_id)
 
-        paginator = Paginator(category.Children)
-        page = paginator.get_page(category.Children)
+        try:
+            children = category.Children
+        except:
+            children = []
+
+        paginator = Paginator(children)
+        page = paginator.get_page(children)
 
         keyboard = menu_inline_keyboard(obj_list=page,
                                         page_number=paginator.page_number,
@@ -89,9 +102,13 @@ async def get_category(call: CallbackQuery):
     if storage != {}:
         category = db.get(MenuCategories, id=storage["parent_id"])
 
-        paginator = Paginator(category.Children, page_number=storage["page_number"])
-        page = paginator.get_page(category.Children, page_number=storage["page_number"])
+        try:
+            children = category.Children
+        except:
+            children = []
 
+        paginator = Paginator(children)
+        page = paginator.get_page(children)
         await dp.storage.update_data(chat=call.message.chat.id,
                                      category_id=category.id,
                                      parent_id=category.parent_id)
@@ -122,8 +139,15 @@ async def get_category(call: CallbackQuery):
     if storage != {}:
         category = db.get(MenuCategories, id=storage["category_id"])
         page_number = storage["page_number"] + 1
-        paginator = Paginator(category.Children, page_number=page_number)
-        page = paginator.get_page(category.Children, page_number=page_number)
+
+        try:
+            children = category.Children
+        except:
+            children = []
+
+        paginator = Paginator(children, page_number=page_number)
+        page = paginator.get_page(children, page_number=page_number)
+
         if paginator.has_next(page_number=page_number):
             keyboard = menu_inline_keyboard(obj_list=page,
                                             page_number=paginator.page_number,
@@ -158,8 +182,13 @@ async def get_category(call: CallbackQuery):
     if storage != {}:
         category = db.get(MenuCategories, id=storage["category_id"])
         page_number = storage["page_number"] - 1
-        paginator = Paginator(category.Children, page_number=page_number)
-        page = paginator.get_page(category.Children, page_number=page_number)
+        try:
+            children = category.Children
+        except:
+            children = []
+
+        paginator = Paginator(children, page_number=page_number)
+        page = paginator.get_page(children, page_number=page_number)
         if paginator.has_previous(page_number=page_number):
 
             keyboard = menu_inline_keyboard(obj_list=page,

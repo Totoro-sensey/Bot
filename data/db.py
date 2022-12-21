@@ -68,7 +68,7 @@ class DBCommands:
         self.pool.add(new_user)
         self.pool.commit()
 
-    def create_category(self, name, text, parent_id):
+    def create_category(self, name, text=None, parent_id=None):
         """
         Создание новой категории
         :return: None
