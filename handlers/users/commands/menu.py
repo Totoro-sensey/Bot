@@ -10,15 +10,17 @@ from utils.paginator import Paginator
 db = DBCommands()
 
 
-async def show_menu(message):
-    storage = await dp.storage.get_data(chat=message.chat.id)
-    category = db.get(MenuCategories, id=storage["category_id"])
-    paginator = Paginator(category.Children, page_number=storage["page_number"])
-    page = paginator.get_page(category.Children, page_number=storage["page_number"])
+async def get_text_and_keyboard(category, chat_id, paginator, page):
+    await dp.storage.update_data(chat=chat_id,
+                                 category_id=category.id,
+                                 parent_id=category.parent_id,
+                                 page_number=paginator.page_number)
+
     keyboard = menu_inline_keyboard(obj_list=page,
                                     page_number=paginator.page_number,
                                     isPages=paginator.diapason > 1)
-    if db.get_user(message.chat.id).Role.name == "administrator":
+
+    if db.get_user(chat_id).Role.name == "administrator":
         keyboard.add(edit_menu)
     if category.parent_id:
         keyboard.add(back_to_menu)
@@ -27,32 +29,39 @@ async def show_menu(message):
     if category.text:
         text += category.text
 
-    await message.answer(text=text,
-                         reply_markup=keyboard)
+    return text, keyboard
+
+
+def get_page(category, page_number):
+    try:
+        children = category.Children
+    except:
+        children = []
+
+    paginator = Paginator(children, page_number)
+    page = paginator.get_page(children, page_number)
+
+    return page, paginator
+
+
+async def show_menu(message):
+    storage = await dp.storage.get_data(chat=message.chat.id)
+    category = db.get(MenuCategories, id=storage["category_id"])
+
+    page, paginator = get_page(category, 1)
+
+    text, keyboard = await get_text_and_keyboard(category, message.chat.id, paginator, page)
+
+    await message.answer(text=text, reply_markup=keyboard)
 
 
 @dp.message_handler(commands="menu")
 async def menu(message: types.Message):
     category = db.get(MenuCategories, id=1)
 
-    try:
-        children = category.Children
-    except:
-        children = []
+    page, paginator = get_page(category, 1)
 
-    paginator = Paginator(children)
-    page = paginator.get_page(children)
-    keyboard = menu_inline_keyboard(obj_list=page,
-                                    page_number=paginator.page_number,
-                                    isPages=paginator.diapason > 1)
-
-    if db.get_user(message.chat.id).Role.name == "administrator":
-        keyboard.add(edit_menu)
-
-    await dp.storage.update_data(chat=message.chat.id,
-                                 category_id=1,
-                                 parent_id=0,
-                                 page_number=1)
+    text, keyboard = await get_text_and_keyboard(category, message.chat.id, paginator, page)
 
     await message.answer(text="Главное меню", reply_markup=keyboard)
 
@@ -63,29 +72,11 @@ async def get_category(call: CallbackQuery):
 
     storage = await dp.storage.get_data(chat=call.message.chat.id)
     if storage != {}:
-        await dp.storage.update_data(chat=call.message.chat.id,
-                                     category_id=category_id,
-                                     parent_id=storage["category_id"],
-                                     page_number=1)
-
         category = db.get(MenuCategories, id=category_id)
 
-        try:
-            children = category.Children
-        except:
-            children = []
+        page, paginator = get_page(category, 1)
 
-        paginator = Paginator(children)
-        page = paginator.get_page(children)
-
-        keyboard = menu_inline_keyboard(obj_list=page,
-                                        page_number=paginator.page_number,
-                                        isPages=paginator.diapason > 1)
-
-        if db.get_user(call.from_user.id).Role.name == "administrator":
-            keyboard.add(edit_menu)
-        if category.parent_id:
-            keyboard.add(back_to_menu)
+        text, keyboard = await get_text_and_keyboard(category, call.from_user.id, paginator, page)
 
         await call.message.edit_text(text=f"{category.name}\n"
                                      f"{category.text}",
@@ -101,30 +92,9 @@ async def get_category(call: CallbackQuery):
 
     if storage != {}:
         category = db.get(MenuCategories, id=storage["parent_id"])
+        page, paginator = get_page(category, 1)
 
-        try:
-            children = category.Children
-        except:
-            children = []
-
-        paginator = Paginator(children)
-        page = paginator.get_page(children)
-        await dp.storage.update_data(chat=call.message.chat.id,
-                                     category_id=category.id,
-                                     parent_id=category.parent_id)
-
-        keyboard = menu_inline_keyboard(obj_list=page,
-                                        page_number=paginator.page_number,
-                                        isPages=paginator.diapason > 1)
-
-        if db.get_user(call.from_user.id).Role.name == "administrator":
-            keyboard.add(edit_menu)
-        if category.parent_id:
-            keyboard.add(back_to_menu)
-
-        text = f"{category.name}\n"
-        if category.text:
-            text += category.text
+        text, keyboard = await get_text_and_keyboard(category, call.from_user.id, paginator, page)
 
         await call.message.edit_text(text=text, reply_markup=keyboard)
     else:
@@ -140,32 +110,11 @@ async def get_category(call: CallbackQuery):
         category = db.get(MenuCategories, id=storage["category_id"])
         page_number = storage["page_number"] + 1
 
-        try:
-            children = category.Children
-        except:
-            children = []
-
-        paginator = Paginator(children, page_number=page_number)
-        page = paginator.get_page(children, page_number=page_number)
+        page, paginator = get_page(category, page_number)
 
         if paginator.has_next(page_number=page_number):
-            keyboard = menu_inline_keyboard(obj_list=page,
-                                            page_number=paginator.page_number,
-                                            isPages=paginator.diapason > 1)
 
-            await dp.storage.update_data(chat=call.message.chat.id,
-                                         category_id=category.id,
-                                         parent_id=storage["parent_id"],
-                                         page_number=page_number)
-
-            if db.get_user(call.from_user.id).Role.name == "administrator":
-                keyboard.add(edit_menu)
-            if category.parent_id:
-                keyboard.add(back_to_menu)
-
-            text = f"{category.name}\n"
-            if category.text:
-                text += category.text
+            text, keyboard = await get_text_and_keyboard(category, call.from_user.id, paginator, page)
 
             await call.message.edit_text(text=text, reply_markup=keyboard)
         else:
@@ -182,32 +131,12 @@ async def get_category(call: CallbackQuery):
     if storage != {}:
         category = db.get(MenuCategories, id=storage["category_id"])
         page_number = storage["page_number"] - 1
-        try:
-            children = category.Children
-        except:
-            children = []
 
-        paginator = Paginator(children, page_number=page_number)
-        page = paginator.get_page(children, page_number=page_number)
+        page, paginator = get_page(category, page_number)
+
         if paginator.has_previous(page_number=page_number):
 
-            keyboard = menu_inline_keyboard(obj_list=page,
-                                            page_number=paginator.page_number,
-                                            isPages=paginator.diapason > 1)
-
-            await dp.storage.update_data(chat=call.message.chat.id,
-                                         category_id=category.id,
-                                         parent_id=storage["parent_id"],
-                                         page_number=page_number)
-
-            if db.get_user(call.from_user.id).Role.name == "administrator":
-                keyboard.add(edit_menu)
-            if category.parent_id:
-                keyboard.add(back_to_menu)
-
-            text = f"{category.name}\n"
-            if category.text:
-                text += category.text
+            text, keyboard = await get_text_and_keyboard(category, call.from_user.id, paginator, page)
 
             await call.message.edit_text(text=text, reply_markup=keyboard)
         else:
