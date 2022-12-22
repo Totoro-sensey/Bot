@@ -45,7 +45,7 @@ jobs:
     steps:
         # Вход в Docker Hub
       - name: Login in dockerhub
-        run: echo PWD | docker login -u $LOGIN --password-stdin
+        run: echo $PWD | docker login -u $LOGIN --password-stdin
         # Чекаутим код
       - uses: actions/checkout@master
       - name: Build image
